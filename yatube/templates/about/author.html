@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+<head>
+  <title>
+    {% block title %}
+      Об авторе проекта
+    {% endblock title %}
+  </title>
+</head>
+<body>
+  <main>
+    {% block text %}
+      <div class="container py-5">
+        <h1>Привет, я автор</h1>
+      </div>
+    {% endblock text %}
+    {% block content %}
+      <div class="container py-5">
+        <p>
+          <s>Я родился в Москве в семидесятом на краю города...</s>
+        </p>
+        <p>В разработке. Всё будет, но не сразу.</p>
+      </div>
+    {% endblock content %}
+  </main>
+</body>

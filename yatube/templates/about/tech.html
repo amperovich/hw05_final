@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+<head>
+  <title>
+    {% block title %}
+      Технологии
+    {% endblock title %}
+  </title>
+</head>
+<body>
+  <main>
+    {% block text %}
+      <div class="container py-5">
+        <h1>Вот что я не очень то хорошо и умею</h1>
+      </div>
+    {% endblock text %}
+    {% block content %}
+      <div class="row">
+        <aside class="col-12 col-md-3">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">Python</li>
+            <li class="list-group-item">Django</li>
+            <li class="list-group-item">SQL</li>
+            <li class="list-group-item">Linux</li>
+          </ul>
+        </aside>
+        <article class="col-12 col-md-9">
+          <p>Текст страницы "Технологии"</p>
+        </article>
+      </div>
+    {% endblock content %}
+  </main>
+</body>
