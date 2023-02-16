@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -20,7 +19,6 @@ def index(request: HttpRequest) -> HttpResponse:
             'page_obj': paginate(
                 request,
                 posts,
-                settings.POSTS_DISPLAYED,
             ),
         },
     )
@@ -37,7 +35,6 @@ def group_posts(request: HttpRequest, slug: str) -> HttpResponse:
             'page_obj': paginate(
                 request,
                 posts,
-                settings.POSTS_DISPLAYED,
             ),
         },
     )
@@ -46,15 +43,21 @@ def group_posts(request: HttpRequest, slug: str) -> HttpResponse:
 def profile(request: HttpRequest, username: str) -> HttpResponse:
     author = get_object_or_404(User, username=username)
     posts = author.posts.all()
+    following = False
+    if request.user.is_authenticated:
+        following = Follow.objects.filter(
+            author=author,
+            user=request.user,
+        ).exists()
     return render(
         request,
         'posts/profile.html',
         {
             'author': author,
+            'following': following,
             'page_obj': paginate(
                 request,
                 posts,
-                settings.POSTS_DISPLAYED,
             ),
         },
     )
@@ -69,7 +72,7 @@ def post_create(request: HttpRequest) -> HttpResponse:
         return redirect(
             reverse(
                 'posts:profile',
-                args=[request.user.username],
+                args=(request.user.username,),
             ),
         )
 
@@ -99,14 +102,12 @@ def post_edit(request: HttpRequest, pk: int) -> HttpResponse:
 def post_detail(request: HttpRequest, pk: int) -> HttpResponse:
     post = get_object_or_404(Post, pk=pk)
     form = CommentForm(request.POST or None)
-    comments = post.comments.all()
     return render(
         request,
         'posts/post_detail.html',
         {
             'post': post,
             'form': form,
-            'comments': comments,
         },
     )
 
@@ -116,38 +117,39 @@ def add_comment(request: HttpRequest, pk: int) -> HttpResponse:
     post = get_object_or_404(Post, pk=pk)
     form = CommentForm(request.POST or None)
     if form.is_valid():
-        comment = form.save(commit=False)
-        comment.author = request.user
-        comment.post = post
-        comment.save()
+        form.instance.author = request.user
+        form.instance.post = post
+        form.save()
     return redirect('posts:post_detail', pk=pk)
 
 
 @login_required
-def follow_index(request):
+def follow_index(request: HttpRequest) -> HttpResponse:
     posts = Post.objects.filter(author__following__user=request.user)
-    context = {
-        'page_obj': paginate(
-            request,
-            posts,
-            settings.POSTS_DISPLAYED,
-        ),
-    }
-    return render(request, 'posts/follow.html', context)
+    return render(
+        request,
+        'posts/follow.html',
+        {
+            'page_obj': paginate(
+                request,
+                posts,
+            ),
+        },
+    )
 
 
 @login_required
-def profile_follow(request, username):
+def profile_follow(request: HttpRequest, username: str) -> HttpResponse:
     author = get_object_or_404(User, username=username)
     if request.user != author:
         Follow.objects.get_or_create(user=request.user, author=author)
-        return redirect('posts:profile', username=username)
-    else:
-        return redirect('posts:index')
+    return redirect('posts:profile', username=username)
 
 
 @login_required
-def profile_unfollow(request, username):
-    author = get_object_or_404(User, username=username)
-    Follow.objects.filter(user=request.user, author=author).delete()
+def profile_unfollow(request: HttpRequest, username: str) -> HttpResponse:
+    Follow.objects.filter(
+        author=get_object_or_404(User, username=username),
+        user=request.user,
+    ).delete()
     return redirect('posts:profile', username=username)

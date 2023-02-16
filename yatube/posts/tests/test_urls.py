@@ -33,6 +33,7 @@ class PostsURLTests(TestCase):
 
         cls.urls = {
             'comment': reverse('posts:add_comment', args=(cls.post.pk,)),
+            'follow': reverse('posts:follow_index'),
             'group': reverse('posts:group_list', args=(cls.group.slug,)),
             'index': reverse('posts:index'),
             'login': reverse('users:login'),
@@ -42,6 +43,10 @@ class PostsURLTests(TestCase):
             'profile': reverse('posts:profile', args=(cls.post.author,)),
             'profile_follow': reverse(
                 'posts:profile_follow',
+                args=(cls.post.author.username,),
+            ),
+            'profile_unfollow': reverse(
+                'posts:profile_unfollow',
                 args=(cls.post.author.username,),
             ),
             'nonexistent': fake.pystr(min_chars=3, max_chars=13),
@@ -57,6 +62,11 @@ class PostsURLTests(TestCase):
 
     def test_http_statuses(self):
         http_statuses = (
+            (self.urls.get('comment'), HTTPStatus.FOUND, self.client),
+            (self.urls.get('comment'), HTTPStatus.FOUND, self.auth),
+            (self.urls.get('follow'), HTTPStatus.FOUND, self.client),
+            (self.urls.get('follow'), HTTPStatus.OK, self.auth),
+            (self.urls.get('follow'), HTTPStatus.OK, self.auth_author),
             (self.urls.get('group'), HTTPStatus.OK, self.client),
             (self.urls.get('index'), HTTPStatus.OK, self.client),
             (self.urls.get('login'), HTTPStatus.OK, self.client),
@@ -66,6 +76,10 @@ class PostsURLTests(TestCase):
             (self.urls.get('post_edit'), HTTPStatus.FOUND, self.client),
             (self.urls.get('post_edit'), HTTPStatus.FOUND, self.auth),
             (self.urls.get('post_edit'), HTTPStatus.OK, self.auth_author),
+            (self.urls.get('profile_follow'), HTTPStatus.FOUND, self.client),
+            (self.urls.get('profile_follow'), HTTPStatus.FOUND, self.auth),
+            (self.urls.get('profile_unfollow'), HTTPStatus.FOUND, self.client),
+            (self.urls.get('profile_unfollow'), HTTPStatus.FOUND, self.auth),
             (self.urls.get('profile'), HTTPStatus.OK, self.auth),
             (self.urls.get('nonexistent'), HTTPStatus.NOT_FOUND, self.auth),
         )
@@ -86,6 +100,11 @@ class PostsURLTests(TestCase):
                 self.urls.get('group'),
                 'posts/group_list.html',
                 self.client,
+            ),
+            (
+                self.urls.get('follow'),
+                'posts/follow.html',
+                self.auth,
             ),
             (
                 self.urls.get('index'),
@@ -149,14 +168,39 @@ class PostsURLTests(TestCase):
                 self.client,
             ),
             (
+                self.urls.get('post_edit'),
+                self.urls.get('post_detail'),
+                self.auth,
+            ),
+            (
                 self.urls.get('profile_follow'),
                 redirect_to_login(self.urls.get('profile_follow')).url,
                 self.client,
             ),
             (
-                self.urls.get('post_edit'),
-                self.urls.get('post_detail'),
+                self.urls.get('profile_follow'),
+                self.urls.get('profile', (self.post.author.username,)),
                 self.auth,
+            ),
+            (
+                self.urls.get('profile_follow'),
+                self.urls.get('profile', (self.post.author.username,)),
+                self.auth_author,
+            ),
+            (
+                self.urls.get('profile_unfollow'),
+                redirect_to_login(self.urls.get('profile_unfollow')).url,
+                self.client,
+            ),
+            (
+                self.urls.get('profile_unfollow'),
+                self.urls.get('profile', (self.post.author.username,)),
+                self.auth,
+            ),
+            (
+                self.urls.get('profile_unfollow'),
+                self.urls.get('profile', (self.post.author.username,)),
+                self.auth_author,
             ),
         )
         for url, redirect, client in redirects:

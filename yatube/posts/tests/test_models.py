@@ -14,8 +14,8 @@ class PostModelTest(TestCase):
 
     def test_models_have_correct_object_post(self):
         self.assertEquals(
-            self.post.text[:settings.POST_CHARS],  # fmt: skip
-            str(self.post)[:settings.POST_CHARS],  # fmt: skip
+            self.post.text[:settings.STRING_SIZE],  # fmt: skip
+            str(self.post)[:settings.STRING_SIZE],  # fmt: skip
         )
 
 
@@ -40,8 +40,8 @@ class CommentModelTest(TestCase):
 
     def test_models_have_correct_object_group(self):
         self.assertEquals(
-            self.comment.text,
-            str(self.comment),
+            self.comment.text[:settings.STRING_SIZE],  # fmt: skip
+            str(self.comment)[:settings.STRING_SIZE],  # fmt: skip
         )
 
 

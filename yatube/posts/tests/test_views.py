@@ -151,7 +151,10 @@ class PostsViewsTests(TestCase):
                 'posts/profile.html',
             ):
                 response = self.auth.get(reverse_name)
-                self.assertEqual(new_post, response.context.get('page_obj')[0])
+                self.assertIn(
+                    new_post,
+                    response.context.get('page_obj').object_list,
+                )
 
     def test_auth_can_follow(self):
         self.assertFalse(
@@ -282,5 +285,5 @@ class PaginatorViewsTest(TestCase):
             response = self.auth.get(page)
             self.assertEqual(
                 len(response.context.get('page_obj')),
-                settings.POSTS_DISPLAYED,
+                settings.PAGE_SIZE,
             )

@@ -19,20 +19,23 @@ ALLOWED_HOSTS = [
     'testserver',
 ]
 
+# fmt: off
 INSTALLED_APPS = [
-    'yatube',
     'django.contrib.admin',
+    'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'sorl.thumbnail',
+
     'about.apps.AboutConfig',
     'core.apps.CoreConfig',
     'posts.apps.PostsConfig',
     'users.apps.UsersConfig',
-    'django.contrib.auth',
-    'sorl.thumbnail',
 ]
+# fmt: on
 
 MEDIA_URL = '/media/'
 
@@ -108,9 +111,9 @@ LOGIN_REDIRECT_URL = 'posts:index'
 
 LANGUAGE_CODE = 'ru'
 
-POSTS_DISPLAYED = 10
+PAGE_SIZE = 10
 
-POST_CHARS = 15
+STRING_SIZE = 15
 
 TIME_ZONE = 'UTC'
 

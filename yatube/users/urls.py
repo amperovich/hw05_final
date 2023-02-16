@@ -6,7 +6,7 @@ from users.apps import UsersConfig
 
 app_name = UsersConfig.name
 
-password = [
+passwords = [
     path(
         'change/',
         auth_views.PasswordChangeView.as_view(
@@ -67,5 +67,5 @@ urlpatterns = [
         auth_views.LoginView.as_view(template_name='users/login.html'),
         name='login',
     ),
-    path('password/', include((password, 'users'), namespace='password')),
+    path('password/', include((passwords, 'users'), namespace='password')),
 ]

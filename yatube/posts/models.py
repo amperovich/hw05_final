@@ -10,9 +10,14 @@ class PublicateModel(models.Model):
         verbose_name='дата публикации',
         auto_now_add=True,
     )
+    text = models.TextField(verbose_name='текст')
 
     class Meta:
+        ordering = ('-pub_date',)
         abstract = True
+
+    def __str__(self) -> str:
+        return self.text[:settings.STRING_SIZE]  # fmt: skip
 
 
 class Group(models.Model):
@@ -58,12 +63,8 @@ class Post(PublicateModel):
     )
 
     class Meta:
-        ordering = ('-pub_date',)
         verbose_name = 'пост'
         verbose_name_plural = 'посты'
-
-    def __str__(self) -> str:
-        return self.text[:settings.POST_CHARS]  # fmt: skip
 
 
 class Comment(PublicateModel):
@@ -86,12 +87,8 @@ class Comment(PublicateModel):
     )
 
     class Meta:
-        ordering = ('-pub_date',)
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
-
-    def __str__(self):
-        return self.text
 
 
 class Follow(models.Model):

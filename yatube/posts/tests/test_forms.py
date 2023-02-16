@@ -1,10 +1,15 @@
+import secrets
+from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
+from django.contrib.auth.views import redirect_to_login
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 from faker import Faker
 from mixer.backend.django import mixer
 
-from posts.models import Comment, Post
+from posts.models import Comment, Follow, Post
 
 User = get_user_model()
 fake = Faker()
@@ -25,9 +30,15 @@ class PostsFormTests(TestCase):
             'group': self.group.id,
             'text': 'Тестовый текст',
         }
+        image = SimpleUploadedFile(
+            'test_image.jpg',
+            secrets.token_bytes(600 * 300),
+            content_type='image/jpeg',
+        )
         response = self.auth.post(
             reverse('posts:post_create'),
             data=data,
+            files={'image': image},
             follow=True,
         )
         self.assertRedirects(
@@ -48,6 +59,7 @@ class PostsFormTests(TestCase):
             post.text,
             context.text,
         )
+        self.assertIsNotNone(post.image)
 
     def test_edit_post_by_author(self):
         self.author_user = mixer.blend(User)
@@ -132,7 +144,6 @@ class PostsFormTests(TestCase):
         self.post = mixer.blend('posts.Post', author=self.author_user)
         data = {
             'text': fake.pystr(min_chars=3, max_chars=50),
-            'author': self.post.author,
             'post': self.post.pk,
         }
         response = self.auth.post(
@@ -152,7 +163,7 @@ class PostsFormTests(TestCase):
         )
         self.assertEqual(Comment.objects.count(), 1)
         comment = Comment.objects.get()
-        context = response.context.get('comments')[0]
+        context = response.context.get('post').comments.get()
         self.assertEqual(
             comment.pk,
             context.pk,
@@ -160,4 +171,58 @@ class PostsFormTests(TestCase):
         self.assertEqual(
             comment.text,
             context.text,
+        )
+
+    def test_create_comment_by_anon(self):
+        self.post = mixer.blend('posts.Post')
+        data = {
+            'text': fake.pystr(min_chars=3, max_chars=50),
+            'post': self.post.pk,
+        }
+        response = self.client.post(
+            reverse(
+                'posts:add_comment',
+                kwargs={'pk': self.post.pk},
+            ),
+            data=data,
+            follow=True,
+        )
+        self.assertRedirects(
+            response,
+            redirect_to_login(
+                reverse(
+                    'posts:add_comment',
+                    kwargs={'pk': self.post.pk},
+                ),
+            ).url,
+        )
+        self.assertEqual(Comment.objects.count(), 0)
+
+    def test_follow_and_unfollow(self):
+        self.author_user = mixer.blend(User)
+        response = self.auth.get(
+            reverse(
+                'posts:profile_follow',
+                args=(self.author_user.username,),
+            ),
+        )
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        self.assertTrue(
+            Follow.objects.filter(
+                user=self.user,
+                author=self.author_user,
+            ).exists(),
+        )
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        response = self.auth.get(
+            reverse(
+                'posts:profile_unfollow',
+                args=(self.author_user.username,),
+            ),
+        )
+        self.assertFalse(
+            Follow.objects.filter(
+                user=self.user,
+                author=self.author_user,
+            ).exists(),
         )
