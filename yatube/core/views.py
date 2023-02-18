@@ -40,6 +40,6 @@ def permission_denied(
 def csrf_failure(
     request: HttpRequest,
     reason: str = '',
-):
+) -> HttpResponse:
     del reason
     return render(request, 'core/403csrf.html')

@@ -62,26 +62,26 @@ class PostsURLTests(TestCase):
 
     def test_http_statuses(self):
         http_statuses = (
-            (self.urls.get('comment'), HTTPStatus.FOUND, self.client),
-            (self.urls.get('comment'), HTTPStatus.FOUND, self.auth),
-            (self.urls.get('follow'), HTTPStatus.FOUND, self.client),
-            (self.urls.get('follow'), HTTPStatus.OK, self.auth),
-            (self.urls.get('follow'), HTTPStatus.OK, self.auth_author),
-            (self.urls.get('group'), HTTPStatus.OK, self.client),
-            (self.urls.get('index'), HTTPStatus.OK, self.client),
-            (self.urls.get('login'), HTTPStatus.OK, self.client),
-            (self.urls.get('post_create'), HTTPStatus.FOUND, self.client),
-            (self.urls.get('post_create'), HTTPStatus.OK, self.auth),
-            (self.urls.get('post_detail'), HTTPStatus.OK, self.client),
-            (self.urls.get('post_edit'), HTTPStatus.FOUND, self.client),
-            (self.urls.get('post_edit'), HTTPStatus.FOUND, self.auth),
-            (self.urls.get('post_edit'), HTTPStatus.OK, self.auth_author),
-            (self.urls.get('profile_follow'), HTTPStatus.FOUND, self.client),
-            (self.urls.get('profile_follow'), HTTPStatus.FOUND, self.auth),
-            (self.urls.get('profile_unfollow'), HTTPStatus.FOUND, self.client),
-            (self.urls.get('profile_unfollow'), HTTPStatus.FOUND, self.auth),
-            (self.urls.get('profile'), HTTPStatus.OK, self.auth),
-            (self.urls.get('nonexistent'), HTTPStatus.NOT_FOUND, self.auth),
+            ('comment', HTTPStatus.FOUND, self.client),
+            ('comment', HTTPStatus.FOUND, self.auth),
+            ('follow', HTTPStatus.FOUND, self.client),
+            ('follow', HTTPStatus.OK, self.auth),
+            ('follow', HTTPStatus.OK, self.auth_author),
+            ('group', HTTPStatus.OK, self.client),
+            ('index', HTTPStatus.OK, self.client),
+            ('login', HTTPStatus.OK, self.client),
+            ('post_create', HTTPStatus.FOUND, self.client),
+            ('post_create', HTTPStatus.OK, self.auth),
+            ('post_detail', HTTPStatus.OK, self.client),
+            ('post_edit', HTTPStatus.FOUND, self.client),
+            ('post_edit', HTTPStatus.FOUND, self.auth),
+            ('post_edit', HTTPStatus.OK, self.auth_author),
+            ('profile_follow', HTTPStatus.FOUND, self.client),
+            ('profile_follow', HTTPStatus.FOUND, self.auth),
+            ('profile_unfollow', HTTPStatus.FOUND, self.client),
+            ('profile_unfollow', HTTPStatus.FOUND, self.auth),
+            ('profile', HTTPStatus.OK, self.auth),
+            ('nonexistent', HTTPStatus.NOT_FOUND, self.auth),
         )
         for url, status_code, client in http_statuses:
             with self.subTest(
@@ -90,7 +90,7 @@ class PostsURLTests(TestCase):
                 client=self.clients.get(client, 'Anon'),
             ):
                 self.assertEqual(
-                    client.get(url).status_code,
+                    client.get(self.urls.get(url)).status_code,
                     status_code.value,
                 )
 
@@ -196,11 +196,6 @@ class PostsURLTests(TestCase):
                 self.urls.get('profile_unfollow'),
                 self.urls.get('profile', (self.post.author.username,)),
                 self.auth,
-            ),
-            (
-                self.urls.get('profile_unfollow'),
-                self.urls.get('profile', (self.post.author.username,)),
-                self.auth_author,
             ),
         )
         for url, redirect, client in redirects:

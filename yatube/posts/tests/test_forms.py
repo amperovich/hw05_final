@@ -1,15 +1,12 @@
-import secrets
-from http import HTTPStatus
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import redirect_to_login
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 from faker import Faker
 from mixer.backend.django import mixer
 
 from posts.models import Comment, Follow, Post
+from posts.tests import common
 
 User = get_user_model()
 fake = Faker()
@@ -30,15 +27,10 @@ class PostsFormTests(TestCase):
             'group': self.group.id,
             'text': 'Тестовый текст',
         }
-        image = SimpleUploadedFile(
-            'test_image.jpg',
-            secrets.token_bytes(600 * 300),
-            content_type='image/jpeg',
-        )
         response = self.auth.post(
             reverse('posts:post_create'),
             data=data,
-            files={'image': image},
+            files={'image': common.image()},
             follow=True,
         )
         self.assertRedirects(
@@ -200,21 +192,19 @@ class PostsFormTests(TestCase):
 
     def test_follow_and_unfollow(self):
         self.author_user = mixer.blend(User)
-        response = self.auth.get(
+        self.auth.get(
             reverse(
                 'posts:profile_follow',
                 args=(self.author_user.username,),
             ),
         )
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
         self.assertTrue(
             Follow.objects.filter(
                 user=self.user,
                 author=self.author_user,
             ).exists(),
         )
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        response = self.auth.get(
+        self.auth.get(
             reverse(
                 'posts:profile_unfollow',
                 args=(self.author_user.username,),

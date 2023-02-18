@@ -22,6 +22,7 @@ class PublicateModel(models.Model):
 
 class Group(models.Model):
     namemaxlength = 200
+
     title = models.CharField(
         max_length=namemaxlength,
         verbose_name='название',
@@ -107,7 +108,7 @@ class Follow(models.Model):
 
     constraints = [
         models.UniqueConstraint(
-            fields=['user', 'author'],
+            fields=('user', 'author'),
             name='unique_users',
         ),
     ]
@@ -116,5 +117,5 @@ class Follow(models.Model):
         verbose_name = 'подписчик'
         verbose_name_plural = 'подписчики'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.user} подписан на {self.author}'
