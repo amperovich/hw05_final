@@ -1,4 +1,5 @@
 from pathlib import Path
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
@@ -8,7 +9,7 @@ CACHES = {
     },
 }
 
-SECRET_KEY = 's$2l&fwh^-m$s#(t-&t_s8l6c+s%5ywkn*_%k%42s0q)!((o1)'
+SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = True
 
